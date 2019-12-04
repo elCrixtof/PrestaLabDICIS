@@ -16,7 +16,7 @@
         [HttpGet]
         public IActionResult GetArticulos()
         {
-            return Ok(this.articuloRepository.GetAll());
+            return Ok(this.articuloRepository.GetAllWithUsers());
         }
     }
 }
