@@ -1,11 +1,14 @@
 ﻿namespace PrestaLabDICIS.Web.Controllers
 {
+    using System;
+    using System.IO;
     using System.Threading.Tasks;
     using Data;
     using Data.Entities;
     using Helpers;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.EntityFrameworkCore;
+    using PrestaLabDICIS.Web.Models;
 
     public class ArticulosController : Controller
     {
@@ -51,17 +54,51 @@
         // POST: Products/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Articulo product)
+        public async Task<IActionResult> Create(ArticuloViewModel view)
         {
             if (ModelState.IsValid)
             {
+                var path = string.Empty;
+
+                if (view.ImageFile != null && view.ImageFile.Length > 0)
+                {
+                    path = Path.Combine(
+                        Directory.GetCurrentDirectory(), 
+                        "wwwroot\\images\\Articulos", 
+                        view.ImageFile.FileName);
+
+                    using (var stream = new FileStream(path, FileMode.Create))
+                    {
+                        await view.ImageFile.CopyToAsync(stream);
+                    }
+
+                    path = $"~/images/Articulos/{view.ImageFile.FileName}";
+                }
+
+                var product = this.ToProduct(view, path);
                 // TODO: Pending to change to: this.User.Identity.Name
                 product.User = await this.userHelper.GetUserByEmailAsync("cristian@gmail.com");
                 await this.productRepository.CreateAsync(product);
                 return RedirectToAction(nameof(Index));
             }
 
-            return View(product);
+            return View(view);
+        }
+
+        private Articulo ToProduct(ArticuloViewModel view, string path)
+        {
+            return new Articulo
+            {
+                Id = view.Id,
+                ImageUrl = path,
+                Nombre = view.Nombre,
+                TipoArticulo = view.TipoArticulo,
+                InfoArticulo = view.InfoArticulo,
+                Status = view.Status,
+                Stock = view.Stock,
+                User = view.User
+            };
+
         }
 
         // GET: Products/Edit/5
@@ -78,25 +115,59 @@
                 return NotFound();
             }
 
-            return View(product);
+            var view = this.ToProductViewModel(product);
+            return View(view);
+        }
+
+        private object ToProductViewModel(Articulo product)
+        {
+            return new ArticuloViewModel
+            {
+                Id = product.Id,
+                ImageUrl = product.ImageUrl,
+                Nombre = product.Nombre,
+                TipoArticulo = product.TipoArticulo,
+                InfoArticulo = product.InfoArticulo,
+                Status = product.Status,
+                Stock = product.Stock,
+                User = product.User
+            };
         }
 
         // POST: Products/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Articulo product)
+        public async Task<IActionResult> Edit(ArticuloViewModel view)
         {
             if (ModelState.IsValid)
             {
                 try
                 {
+                    var path = view.ImageUrl;
+
+                    if (view.ImageFile != null && view.ImageFile.Length > 0)
+                    {
+                        path = Path.Combine(
+                            Directory.GetCurrentDirectory(),
+                            "wwwroot\\images\\Articulos",
+                            view.ImageFile.FileName);
+
+                        using (var stream = new FileStream(path, FileMode.Create))
+                        {
+                            await view.ImageFile.CopyToAsync(stream);
+                        }
+
+                        path = $"~/images/Articulos/{view.ImageFile.FileName}";
+                    }
+
+                    var product = this.ToProduct(view, path);
                     // TODO: Pending to change to: this.User.Identity.Name
                     product.User = await this.userHelper.GetUserByEmailAsync("cristian@gmail.com");
                     await this.productRepository.UpdateAsync(product);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!await this.productRepository.ExistAsync(product.Id))
+                    if (!await this.productRepository.ExistAsync(view.Id))
                     {
                         return NotFound();
                     }
@@ -108,7 +179,7 @@
                 return RedirectToAction(nameof(Index));
             }
 
-            return View(product);
+            return View(view);
         }
 
         // GET: Products/Delete/5
