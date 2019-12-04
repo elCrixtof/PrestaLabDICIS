@@ -1,102 +1,99 @@
-﻿namespace PrestaLabDICIS.Web.Controllers
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using PrestaLabDICIS.Web.Data;
+using PrestaLabDICIS.Web.Data.Entities;
+
+namespace PrestaLabDICIS.Web.Controllers
 {
-    using System.Threading.Tasks;
-    using Data;
-    using Data.Entities;
-    using Helpers;
-    using Microsoft.AspNetCore.Mvc;
-    using Microsoft.EntityFrameworkCore;
-
-    public class ArticuloController : Controller
+    public class ArticulosController : Controller
     {
-        private readonly IArticuloRepository productRepository;
+        private readonly IRepository repository;
 
-        private readonly IUserHelper userHelper;
-
-        public ArticuloController(IArticuloRepository productRepository, IUserHelper userHelper)
+        public ArticulosController(IRepository repository)
         {
-            this.productRepository = productRepository;
-            this.userHelper = userHelper;
+            this.repository = repository;
         }
 
-        // GET: Products
+        // GET: Articulos
         public IActionResult Index()
         {
-            return View(this.productRepository.GetAll());
+            return View(this.repository.GetArticulos());
         }
 
-        // GET: Products/Details/5
-        public async Task<IActionResult> Details(int? id)
+        // GET: Articulos/Details/5
+        public IActionResult Details(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
 
-            var product = await this.productRepository.GetByIdAsync(id.Value);
-            if (product == null)
+            var articulo = this.repository.GetArticulo(id.Value);
+
+            if (articulo == null)
             {
                 return NotFound();
             }
 
-            return View(product);
+            return View(articulo);
         }
 
-        // GET: Products/Create
+        // GET: Articulos/Create
         public IActionResult Create()
         {
             return View();
         }
 
-        // POST: Products/Create
+        // POST: Articulos/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Articulo product)
+        public async Task<IActionResult> Create(Articulo articulo)
         {
             if (ModelState.IsValid)
             {
-                // TODO: Pending to change to: this.User.Identity.Name
-                product.User = await this.userHelper.GetUserByEmailAsync("cristian@gmail.com");
-                await this.productRepository.CreateAsync(product);
+                this.repository.AddArticulo(articulo);
+                await this.repository.SaveAllAsync();
                 return RedirectToAction(nameof(Index));
             }
-
-            return View(product);
+            return View(articulo);
         }
 
-        // GET: Products/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        // GET: Articulos/Edit/5
+        public IActionResult Edit(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
 
-            var product = await this.productRepository.GetByIdAsync(id.Value);
-            if (product == null)
+            var articulo = this.repository.GetArticulo(id.Value);            
+            if (articulo == null)
             {
                 return NotFound();
             }
-
-            return View(product);
+            return View(articulo);
         }
 
-        // POST: Products/Edit/5
+        // POST: Articulos/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Articulo product)
+        public async Task<IActionResult> Edit(int id, Articulo articulo)
         {
             if (ModelState.IsValid)
             {
                 try
                 {
-                    // TODO: Pending to change to: this.User.Identity.Name
-                    product.User = await this.userHelper.GetUserByEmailAsync("cristian@gmail.com");
-                    await this.productRepository.UpdateAsync(product);
+                    this.repository.UpdateArticulo(articulo);
+                    await this.repository.SaveAllAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!await this.productRepository.ExistAsync(product.Id))
+                    if (!this.repository.ArticuloExists(articulo.Id))
                     {
                         return NotFound();
                     }
@@ -107,36 +104,35 @@
                 }
                 return RedirectToAction(nameof(Index));
             }
-
-            return View(product);
+            return View(articulo);
         }
 
-        // GET: Products/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        // GET: Articulos/Delete/5
+        public IActionResult Delete(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
 
-            var product = await this.productRepository.GetByIdAsync(id.Value);
-            if (product == null)
+            var articulo = this.repository.GetArticulo(id.Value);
+            if (articulo == null)
             {
                 return NotFound();
             }
 
-            return View(product);
+            return View(articulo);
         }
 
-        // POST: Products/Delete/5
+        // POST: Articulos/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public IActionResult DeleteConfirmed(int id)
         {
-            var product = await this.productRepository.GetByIdAsync(id);
-            await this.productRepository.DeleteAsync(product);
+            var articulo = this.repository.GetArticulo(id);
+            this.repository.RemoveArticulo(articulo);
+            this.repository.SaveAllAsync();
             return RedirectToAction(nameof(Index));
         }
     }
-
 }

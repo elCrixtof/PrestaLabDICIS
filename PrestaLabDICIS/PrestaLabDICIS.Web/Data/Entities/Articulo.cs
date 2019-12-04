@@ -1,8 +1,9 @@
 ﻿namespace PrestaLabDICIS.Web.Data.Entities
 {
+    using System;
     using System.ComponentModel.DataAnnotations;
 
-    public class Articulo : IEntity
+    public class Articulo
     {
         public int Id { get; set; }
 
@@ -20,9 +21,7 @@
         [Display(Name = "Esta disponiponible?")]
         public bool Status { get; set; }
 
-        [DisplayFormat(DataFormatString = "{0:N2}", ApplyFormatInEditMode = false)]
+        [DisplayFormat(DataFormatString = "{0:N2}", ApplyFormatInEditMode = false)] 
         public double Stock { get; set; }
-
-        public User User { get; set; }
     }
 }

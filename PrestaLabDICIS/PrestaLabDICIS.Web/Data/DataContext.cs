@@ -1,10 +1,9 @@
 ﻿namespace PrestaLabDICIS.Web.Data
 { 
-    using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
     using Microsoft.EntityFrameworkCore;
-    using Entities;
+    using PrestaLabDICIS.Web.Data.Entities;
 
-    public class DataContext : IdentityDbContext<User>
+    public class DataContext : DbContext
     {
         public DbSet<Articulo> Articulo { get; set; }
 
