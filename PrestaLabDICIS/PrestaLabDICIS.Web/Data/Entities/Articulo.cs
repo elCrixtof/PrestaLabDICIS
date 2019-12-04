@@ -3,7 +3,7 @@
     using System;
     using System.ComponentModel.DataAnnotations;
 
-    public class Articulo
+    public class Articulo : IEntity
     {
         public int Id { get; set; }
 

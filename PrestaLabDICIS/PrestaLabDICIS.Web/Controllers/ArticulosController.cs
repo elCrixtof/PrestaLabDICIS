@@ -1,99 +1,102 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using PrestaLabDICIS.Web.Data;
-using PrestaLabDICIS.Web.Data.Entities;
-
-namespace PrestaLabDICIS.Web.Controllers
+﻿namespace PrestaLabDICIS.Web.Controllers
 {
+    using System.Threading.Tasks;
+    using Data;
+    using Data.Entities;
+    using Helpers;
+    using Microsoft.AspNetCore.Mvc;
+    using Microsoft.EntityFrameworkCore;
+
     public class ArticulosController : Controller
     {
-        private readonly IRepository repository;
+        private readonly IArticuloRepository productRepository;
 
-        public ArticulosController(IRepository repository)
+        private readonly IUserHelper userHelper;
+
+        public ArticulosController(IArticuloRepository productRepository, IUserHelper userHelper)
         {
-            this.repository = repository;
+            this.productRepository = productRepository;
+            this.userHelper = userHelper;
         }
 
-        // GET: Articulos
+        // GET: Products
         public IActionResult Index()
         {
-            return View(this.repository.GetArticulos());
+            return View(this.productRepository.GetAll());
         }
 
-        // GET: Articulos/Details/5
-        public IActionResult Details(int? id)
+        // GET: Products/Details/5
+        public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
 
-            var articulo = this.repository.GetArticulo(id.Value);
-
-            if (articulo == null)
+            var product = await this.productRepository.GetByIdAsync(id.Value);
+            if (product == null)
             {
                 return NotFound();
             }
 
-            return View(articulo);
+            return View(product);
         }
 
-        // GET: Articulos/Create
+        // GET: Products/Create
         public IActionResult Create()
         {
             return View();
         }
 
-        // POST: Articulos/Create
+        // POST: Products/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Articulo articulo)
+        public async Task<IActionResult> Create(Articulo product)
         {
             if (ModelState.IsValid)
             {
-                this.repository.AddArticulo(articulo);
-                await this.repository.SaveAllAsync();
+                // TODO: Pending to change to: this.User.Identity.Name
+                product.User = await this.userHelper.GetUserByEmailAsync("cristian@gmail.com");
+                await this.productRepository.CreateAsync(product);
                 return RedirectToAction(nameof(Index));
             }
-            return View(articulo);
+
+            return View(product);
         }
 
-        // GET: Articulos/Edit/5
-        public IActionResult Edit(int? id)
+        // GET: Products/Edit/5
+        public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
 
-            var articulo = this.repository.GetArticulo(id.Value);            
-            if (articulo == null)
+            var product = await this.productRepository.GetByIdAsync(id.Value);
+            if (product == null)
             {
                 return NotFound();
             }
-            return View(articulo);
+
+            return View(product);
         }
 
-        // POST: Articulos/Edit/5
+        // POST: Products/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, Articulo articulo)
+        public async Task<IActionResult> Edit(Articulo product)
         {
             if (ModelState.IsValid)
             {
                 try
                 {
-                    this.repository.UpdateArticulo(articulo);
-                    await this.repository.SaveAllAsync();
+                    // TODO: Pending to change to: this.User.Identity.Name
+                    product.User = await this.userHelper.GetUserByEmailAsync("cristian@gmail.com");
+                    await this.productRepository.UpdateAsync(product);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!this.repository.ArticuloExists(articulo.Id))
+                    if (!await this.productRepository.ExistAsync(product.Id))
                     {
                         return NotFound();
                     }
@@ -104,35 +107,36 @@ namespace PrestaLabDICIS.Web.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(articulo);
+
+            return View(product);
         }
 
-        // GET: Articulos/Delete/5
-        public IActionResult Delete(int? id)
+        // GET: Products/Delete/5
+        public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
 
-            var articulo = this.repository.GetArticulo(id.Value);
-            if (articulo == null)
+            var product = await this.productRepository.GetByIdAsync(id.Value);
+            if (product == null)
             {
                 return NotFound();
             }
 
-            return View(articulo);
+            return View(product);
         }
 
-        // POST: Articulos/Delete/5
+        // POST: Products/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public IActionResult DeleteConfirmed(int id)
+        public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var articulo = this.repository.GetArticulo(id);
-            this.repository.RemoveArticulo(articulo);
-            this.repository.SaveAllAsync();
+            var product = await this.productRepository.GetByIdAsync(id);
+            await this.productRepository.DeleteAsync(product);
             return RedirectToAction(nameof(Index));
         }
     }
+
 }
