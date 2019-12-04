@@ -12,29 +12,29 @@ namespace PrestaLabDICIS.Web.Controllers
 {
     public class ArticulosController : Controller
     {
-        private readonly DataContext _context;
+        private readonly IRepository repository;
 
-        public ArticulosController(DataContext context)
+        public ArticulosController(IRepository repository)
         {
-            _context = context;
+            this.repository = repository;
         }
 
         // GET: Articulos
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
-            return View(await _context.Articulo.ToListAsync());
+            return View(this.repository.GetArticulos());
         }
 
         // GET: Articulos/Details/5
-        public async Task<IActionResult> Details(int? id)
+        public IActionResult Details(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
 
-            var articulo = await _context.Articulo
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var articulo = this.repository.GetArticulo(id.Value);
+
             if (articulo == null)
             {
                 return NotFound();
@@ -50,30 +50,28 @@ namespace PrestaLabDICIS.Web.Controllers
         }
 
         // POST: Articulos/Create
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Nombre,TipoArticulo,InfoArticulo,ImageUrl,Status,Stock")] Articulo articulo)
+        public async Task<IActionResult> Create(Articulo articulo)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(articulo);
-                await _context.SaveChangesAsync();
+                this.repository.AddArticulo(articulo);
+                await this.repository.SaveAllAsync();
                 return RedirectToAction(nameof(Index));
             }
             return View(articulo);
         }
 
         // GET: Articulos/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        public IActionResult Edit(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
 
-            var articulo = await _context.Articulo.FindAsync(id);
+            var articulo = this.repository.GetArticulo(id.Value);            
             if (articulo == null)
             {
                 return NotFound();
@@ -82,27 +80,20 @@ namespace PrestaLabDICIS.Web.Controllers
         }
 
         // POST: Articulos/Edit/5
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Nombre,TipoArticulo,InfoArticulo,ImageUrl,Status,Stock")] Articulo articulo)
+        public async Task<IActionResult> Edit(int id, Articulo articulo)
         {
-            if (id != articulo.Id)
-            {
-                return NotFound();
-            }
-
             if (ModelState.IsValid)
             {
                 try
                 {
-                    _context.Update(articulo);
-                    await _context.SaveChangesAsync();
+                    this.repository.UpdateArticulo(articulo);
+                    await this.repository.SaveAllAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!ArticuloExists(articulo.Id))
+                    if (!this.repository.ArticuloExists(articulo.Id))
                     {
                         return NotFound();
                     }
@@ -117,15 +108,14 @@ namespace PrestaLabDICIS.Web.Controllers
         }
 
         // GET: Articulos/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        public IActionResult Delete(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
 
-            var articulo = await _context.Articulo
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var articulo = this.repository.GetArticulo(id.Value);
             if (articulo == null)
             {
                 return NotFound();
@@ -137,17 +127,12 @@ namespace PrestaLabDICIS.Web.Controllers
         // POST: Articulos/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public IActionResult DeleteConfirmed(int id)
         {
-            var articulo = await _context.Articulo.FindAsync(id);
-            _context.Articulo.Remove(articulo);
-            await _context.SaveChangesAsync();
+            var articulo = this.repository.GetArticulo(id);
+            this.repository.RemoveArticulo(articulo);
+            this.repository.SaveAllAsync();
             return RedirectToAction(nameof(Index));
-        }
-
-        private bool ArticuloExists(int id)
-        {
-            return _context.Articulo.Any(e => e.Id == id);
         }
     }
 }
