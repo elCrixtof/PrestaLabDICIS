@@ -18,7 +18,7 @@
         [Display(Name = "Image")]
         public string ImageUrl { get; set; }
 
-        [Display(Name = "Esta disponiponible?")]
+        [Display(Name = "Disponible")]
         public bool Status { get; set; }
 
         [DisplayFormat(DataFormatString = "{0:N2}", ApplyFormatInEditMode = false)] 

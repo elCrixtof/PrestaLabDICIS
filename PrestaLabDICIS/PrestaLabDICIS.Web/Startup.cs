@@ -11,6 +11,7 @@
     using Data;
     using Data.Entities;
     using Helpers;
+    using PrestaLabDICIS.Web.Data.Repositories;
 
     public class Startup
     {
@@ -43,9 +44,8 @@
             });
 
             services.AddTransient<SeedDb>();
-
-            
             services.AddScoped<IArticuloRepository, ArticuloRepository>();
+            services.AddScoped<IOrderRepository, OrderRepository>();
             services.AddScoped<IUserHelper, UserHelper>();
 
 
