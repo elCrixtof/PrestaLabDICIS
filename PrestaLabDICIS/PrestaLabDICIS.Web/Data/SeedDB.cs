@@ -23,16 +23,20 @@
         public async Task SeedAsync()
         {
             await this.context.Database.EnsureCreatedAsync();
+            await this.userHelper.CheckRoleAsync("Admin");
+            await this.userHelper.CheckRoleAsync("Encargado");
+            await this.userHelper.CheckRoleAsync("Estudiante");
 
-            var user = await this.userHelper.GetUserByEmailAsync("cristian@gmail.com");
+
+            var user = await this.userHelper.GetUserByEmailAsync("luis@gmail.com");
             if (user == null)
             {
                 user = new User
                 {
-                    FirstName = "Christian",
-                    LastName = "Acosta",
-                    Email = "cristian@gmail.com",
-                    UserName = "Pepa117",
+                    FirstName = "Luis",
+                    LastName = "Soriano",
+                    Email = "luis@gmail.com",
+                    UserName = "luis@gmail.com",
                     PhoneNumber = "4641702754"
                 };
 
@@ -41,7 +45,17 @@
                 {
                     throw new InvalidOperationException("Could not create the user in seeder");
                 }
+
+                await this.userHelper.AddUserToRoleAsync(user, "Admin");
             }
+
+            var isInRole = await this.userHelper.IsUserInRoleAsync(user, "Admin");
+            if (!isInRole)
+            {
+                await this.userHelper.AddUserToRoleAsync(user, "Admin");
+            }
+
+            
 
             if (!this.context.Articulo.Any())
             {

@@ -12,7 +12,7 @@
     using PrestaLabDICIS.Web.Models;
 
 
-    [Authorize]
+    
     public class ArticulosController : Controller
     {
         private readonly IArticuloRepository productRepository;
@@ -26,6 +26,7 @@
         }
 
         // GET: Products
+        [Authorize]
         public IActionResult Index()
         {
             return View(this.productRepository.GetAllWithUsers());
@@ -48,6 +49,8 @@
             return View(product);
         }
 
+
+        [Authorize(Roles = "Admin")]
         // GET: Products/Create
         public IActionResult Create()
         {
@@ -107,6 +110,7 @@
 
         }
 
+        [Authorize(Roles = "Admin")]
         // GET: Products/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
@@ -171,7 +175,7 @@
 
                     var product = this.ToProduct(view, path);
                     // TODO: Pending to change to: this.User.Identity.Name
-                    product.User = await this.userHelper.GetUserByEmailAsync("cristian@gmail.com");
+                    product.User = await this.userHelper.GetUserByEmailAsync(this.User.Identity.Name);
                     await this.productRepository.UpdateAsync(product);
                 }
                 catch (DbUpdateConcurrencyException)
@@ -191,6 +195,7 @@
             return View(view);
         }
 
+        [Authorize(Roles = "Admin")]
         // GET: Products/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
