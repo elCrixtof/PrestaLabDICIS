@@ -12,7 +12,7 @@
     using PrestaLabDICIS.Web.Models;
 
 
-
+    [Authorize]
     public class ArticulosController : Controller
     {
         private readonly IArticuloRepository productRepository;
@@ -83,7 +83,7 @@
 
                 var product = this.ToProduct(view, path);
                 // TODO: Pending to change to: this.User.Identity.Name
-                product.User = await this.userHelper.GetUserByEmailAsync("cristian@gmail.com");
+                product.User = await this.userHelper.GetUserByEmailAsync(this.User.Identity.Name);
                 await this.productRepository.CreateAsync(product);
                 return RedirectToAction(nameof(Index));
             }
