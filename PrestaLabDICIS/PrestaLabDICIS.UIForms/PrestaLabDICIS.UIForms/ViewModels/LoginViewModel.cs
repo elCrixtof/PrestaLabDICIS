@@ -1,6 +1,7 @@
 ﻿namespace PrestaLabDICIS.UIForms.ViewModels
 {
     using GalaSoft.MvvmLight.Command;
+    using PrestaLabDICIS.UIForms.Views;
     using System;
     using System.Windows.Input;
     using Xamarin.Forms;
@@ -33,7 +34,9 @@
                 return;
             }
 
-            await Application.Current.MainPage.DisplayAlert("Ok", "Fuck yeah!!!", "Accept");
+            MainViewModel.GetInstance().Products = new ProductsViewModel();
+            await Application.Current.MainPage.Navigation.PushAsync(new ProductsPage());
+
         }
     }
 }

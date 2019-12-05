@@ -1,4 +1,5 @@
-﻿using PrestaLabDICIS.UIForms.Views;
+﻿using PrestaLabDICIS.UIForms.ViewModels;
+using PrestaLabDICIS.UIForms.Views;
 using System;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
@@ -11,7 +12,8 @@ namespace PrestaLabDICIS.UIForms
         {
             InitializeComponent();
 
-            MainPage = new NavigationPage(new LoginPage());
+            MainViewModel.GetInstance().Login = new LoginViewModel();
+            this.MainPage = new NavigationPage(new LoginPage());
         }
 
         protected override void OnStart()
